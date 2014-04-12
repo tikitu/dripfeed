@@ -2,9 +2,6 @@
 dripfeed
 ===============================
 
-.. image:: https://badge.fury.io/py/dripfeed.png
-    :target: http://badge.fury.io/py/dripfeed
-
 .. image:: https://travis-ci.org/tikitu/dripfeed.png?branch=master
         :target: https://travis-ci.org/tikitu/dripfeed
 
@@ -27,4 +24,4 @@ Requirements
 License
 -------
 
-MIT licensed. See the bundled `LICENSE <https://github.com/tikitu/dripfeed/blob/master/LICENSE>`_ file for more details.
+MIT licensed. See the bundled `LICENSE <https://bitbucket.org/tikitu/dripfeed/tip/dripfeed/LICENSE>`_ file for more details.
