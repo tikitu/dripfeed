@@ -24,4 +24,4 @@ Requirements
 License
 -------
 
-MIT licensed. See the bundled `LICENSE <https://bitbucket.org/tikitu/dripfeed/tip/dripfeed/LICENSE>`_ file for more details.
+MIT licensed. See the bundled `LICENSE <https://bitbucket.org/tikitu/dripfeed/src/tip/dripfeed/LICENSE>`_ file for more details.
