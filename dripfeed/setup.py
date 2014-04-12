@@ -52,7 +52,7 @@ setup(
     long_description=read("README.rst"),
     author='Tikitu de Jager',
     author_email='tikitu@logophile.org',
-    url='https://github.com/tikitu/dripfeed',
+    url='https://bitbucket.org/tikitu/dripfeed',
     install_requires=REQUIRES,
     license=read("LICENSE"),
     zip_safe=False,
