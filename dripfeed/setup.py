@@ -37,7 +37,7 @@ def find_version(fname):
         raise RuntimeError('Cannot find version information')
     return version
 
-__version__ = find_version("dripfeed.py")
+__version__ = find_version("dripfeed/__init__.py")
 
 
 def read(fname):
@@ -69,7 +69,7 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
-    py_modules=["dripfeed"],
+    packages=["dripfeed"],
     entry_points={
         'console_scripts': [
             "dripfeed = dripfeed:main"
