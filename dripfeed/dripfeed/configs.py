@@ -1,3 +1,4 @@
+from __future__ import unicode_literals, print_function
 import contextlib
 import os
 import simplejson as json
@@ -8,12 +9,13 @@ __author__ = 'tikitu'
 
 class Config(object):
 
-    FILENAME = '~/dripfeed.cfg'
+    FILENAME = os.path.expanduser('~/.dripfeed.cfg')
 
-    def __init__(self, comic_name=None, downloaded_count=0, next_url=None):
+    def __init__(self, comic_name=None, downloaded_count=0, next_url=None, rss_file=None):
         self.comic_name = comic_name
         self.downloaded_count = downloaded_count
         self.next_url = next_url
+        self.rss_file = os.path.abspath(rss_file)
 
     def as_json_d(self):
         """Return a dict suitable for updating the global config dict: global.update(a_config.as_json_d())."""
@@ -21,6 +23,7 @@ class Config(object):
             self.comic_name: {
                 'downloaded_count': self.downloaded_count,
                 'next_url': self.next_url,
+                'rss_file': self.rss_file,
             }
         }
 
@@ -57,14 +60,18 @@ def get_config(comic_name):
 def put_config(config, create_file=False, filename=Config.FILENAME):
     # NOT under locking: there's no (sane) way to lock file creation safely :-/ So be careful when you call this!
     if create_file and not os.path.isfile(filename):
-        with open(filename, 'w+') as f:
+        print('Creating file {0}'.format(filename))
+        with open(filename, 'w') as f:
             f.write('{}')
             f.write(os.linesep)
     with _locked_config_file(filename=filename) as f:
         global_config = json.load(f)
+        if config.comic_name in global_config:
+            raise ValueError('Comic {0} is already configured!'.format(config.comic_name))
+        print('Adding {0} to config file {1}'.format(config.comic_name, filename))
         global_config.update(config.as_json_d())
         f.seek(0)
-        json.dump(global_config, f)
+        json.dump(global_config, f, sort_keys=True, indent=2*' ')
 
 
 def get_global_config(allow_missing_file=False, filename=Config.FILENAME):

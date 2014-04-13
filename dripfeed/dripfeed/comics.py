@@ -12,8 +12,8 @@ class Comic(object):
     def next_update(self, config):
         raise NotImplementedError()
 
-    def initial_config(self):
-        return Config(comic_name=self.name, downloaded_count=0, next_url=self.start_url)
+    def initial_config(self, rss_filename):
+        return Config(comic_name=self.name, downloaded_count=0, next_url=self.start_url, rss_file=rss_filename)
 
 
 ALL = (

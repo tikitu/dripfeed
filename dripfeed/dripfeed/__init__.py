@@ -39,7 +39,7 @@ def run(args):
     if args['list']:
         list_comics(args['--all'])
     elif args['init']:
-        create_config(args['<comic>'])
+        create_config(args['<comic>'], args['<rss_file>'])
     elif args['run']:
         run_once(args['<comic>'])
     elif args['info']:
@@ -62,9 +62,9 @@ def list_comics(show_unstarted):
         print('(no comics configured for download)')
 
 
-def create_config(comic_name):
+def create_config(comic_name, rss_filename):
     comic = get_comic(comic_name)
-    config = comic.initial_config()
+    config = comic.initial_config(rss_filename)
     put_config(config, create_file=True)
 
 
