@@ -7,7 +7,7 @@ class Comic(object):
         self.full_name = full_name or name
         self.start_url = start_url
 
-    def get_next_url(self, current_url):
+    def next_update(self, config):
         raise NotImplementedError()
 
 
@@ -16,3 +16,10 @@ ALL = (
     Comic(name='narbonic', full_name='Narbonic',
           start_url='http://www.webcomicsnation.com/shaenongarrity/narbonic/series.php?view=archive&chapter=9763'),
 )
+
+
+def get_comic(name):
+    if not hasattr(get_comic, '_cache'):
+        get_comic._cache = dict((comic.name, comic) for comic in ALL)
+    return get_comic._cache.get(name)
+
