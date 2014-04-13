@@ -9,6 +9,8 @@ REQUIRES = [
     'docopt',
     'simplejson',
     'portalocker',
+    'requests',
+    'lxml',
 ]
 
 class PyTest(TestCommand):

@@ -59,7 +59,7 @@ def get_config(comic_name):
         return Config(comic_name=comic_name, **global_config.get(comic_name, {}))
 
 
-def put_config(config, create_file=False, filename=Config.FILENAME):
+def put_config(config, create_file=False, filename=Config.FILENAME, overwrite=False):
     # file creation is NOT under locking: there's no (sane) way to lock file creation safely :-/
     # So be careful when you call this, with create_file=True!
     if create_file and not os.path.isfile(filename):
@@ -69,12 +69,13 @@ def put_config(config, create_file=False, filename=Config.FILENAME):
             f.write(os.linesep)
     with _locked_config_file(filename=filename) as f:
         global_config = json.load(f)
-        if config.comic_name in global_config:
+        if config.comic_name in global_config and not overwrite:
             raise ValueError('Comic {0} is already configured!'.format(config.comic_name))
         print('Adding {0} to config file {1}'.format(config.comic_name, filename))
         global_config.update(config.as_json_d())
         f.seek(0)
         json.dump(global_config, f, sort_keys=True, indent=2*' ')
+        f.truncate()
 
 
 def get_global_config(allow_missing_file=False, filename=Config.FILENAME):

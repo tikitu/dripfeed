@@ -72,7 +72,7 @@ def run_once(comic_name):
     comic = get_comic(comic_name)
     config = get_config(comic_name)
     rss_entry, new_config = comic.next_update(config)
-    put_config(new_config)
+    put_config(new_config, overwrite=True)
     write_rss_entry(comic_name, rss_entry)
 
 
