@@ -7,6 +7,8 @@ from setuptools.command.test import test as TestCommand
 
 REQUIRES = [
     'docopt',
+    'simplejson',
+    'portalocker',
 ]
 
 class PyTest(TestCommand):

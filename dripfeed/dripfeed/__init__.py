@@ -3,19 +3,27 @@
 """dripfeed
 
 Usage:
-  dripfeed list
+  dripfeed list [--all]
+  dripfeed init <comic> <rss_file>
   dripfeed run <comic>
   dripfeed info <comic>
 
 Options:
   -h --help     Show this screen.
   --version     Show version.
+
+Commands:
+  list                     Show active comics, or all available comics with --all
+  init <comic> <rss_file>  Create <rss_file> and set up config for <comic>
+  run <comic>              Update the RSS feed for <comic> with one entry (use cron for regular updates)
+  info <comic>             Show all config information for <comic>
 """
 
 from __future__ import unicode_literals, print_function
 from docopt import docopt
 from .comics import ALL as ALL_COMICS, get_comic
-from .configs import get_config, put_config
+from .configs import get_config, put_config, locked_config_file, Config
+import simplejson as json
 
 __version__ = "0.1.0"
 __author__ = "Tikitu de Jager"
@@ -25,7 +33,7 @@ __license__ = "MIT"
 def main():
     args = docopt(__doc__, version=__version__)
     if args['list']:
-        list_comics()
+        list_comics(args['--all'])
     elif args['run']:
         run_once(args['<comic>'])
     elif args['info']:
@@ -34,9 +42,19 @@ def main():
         raise ValueError('Wut? {0}'.format(args))
 
 
-def list_comics():
-    for comic in ALL_COMICS:
-        print('{0} ({1}): {2}'.format(comic.name, comic.full_name, comic.start_url))
+def list_comics(show_unstarted):
+    with locked_config_file() as f:
+        global_config = json.load(f)
+        got_any = False
+        for comic in ALL_COMICS:
+            if comic.name in global_config or show_unstarted:
+                print('{0} ({1}): {2}'.format(comic.name, comic.full_name, comic.start_url))
+            if comic.name in global_config:
+                config = Config(comic_name=comic.name, **global_config[comic.name])
+                print('  At episode {0}: {1}'.format(config.downloaded_count, config.next_url))
+                got_any = True
+        if not got_any:
+            print('(no comics configured for download)')
 
 
 def run_once(comic_name):
@@ -51,7 +69,7 @@ def current_info(comic_name):
     comic = get_comic(comic_name)
     config = get_config(comic_name)
     next_url = comic.get_url(config)
-    print('{0} (1): {2}'.format(comic.full_name, config.get('downloaded_count', 0), next_url))
+    print('{0} (1): {2}'.format(comic.full_name, config.downloaded_count, next_url))
 
 
 def write_rss_entry(comic_name, entry):
