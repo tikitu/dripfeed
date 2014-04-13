@@ -1,3 +1,5 @@
+from .configs import Config
+
 __author__ = 'tikitu'
 
 
@@ -9,6 +11,9 @@ class Comic(object):
 
     def next_update(self, config):
         raise NotImplementedError()
+
+    def initial_config(self):
+        return Config(comic_name=self.name, downloaded_count=0, next_url=self.start_url)
 
 
 ALL = (

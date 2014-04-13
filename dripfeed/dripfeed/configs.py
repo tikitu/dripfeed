@@ -7,6 +7,9 @@ __author__ = 'tikitu'
 
 
 class Config(object):
+
+    FILENAME = '~/dripfeed.cfg'
+
     def __init__(self, comic_name=None, downloaded_count=0, next_url=None):
         self.comic_name = comic_name
         self.downloaded_count = downloaded_count
@@ -23,7 +26,7 @@ class Config(object):
 
 
 @contextlib.contextmanager
-def locked_config_file(filename='~/.dripfeed.cfg'):
+def locked_config_file(filename=Config.FILENAME):
     """
     Get and release lock on global config file.
     We use this whenever reading/writing (but *not* over whole program run!).
@@ -51,8 +54,13 @@ def get_config(comic_name):
         return Config(comic_name=comic_name, **global_config.get(comic_name, {}))
 
 
-def put_config(config):
-    with locked_config_file() as f:
+def put_config(config, create_file=False, filename=Config.FILENAME):
+    # NOT under locking: there's no (sane) way to lock file creation safely :-/ So be careful when you call this!
+    if create_file and not os.path.isfile(filename):
+        with open(filename, 'w+') as f:
+            f.write('{}')
+            f.write(os.linesep)
+    with locked_config_file(filename=filename) as f:
         global_config = json.load(f)
         global_config.update(config.as_json_d())
         f.seek(0)

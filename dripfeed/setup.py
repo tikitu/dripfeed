@@ -77,6 +77,9 @@ setup(
             "dripfeed = dripfeed:main"
         ]
     },
-    tests_require=['pytest'],
+    tests_require=[
+        'pytest',
+        'simplejson',
+    ],
     cmdclass={'test': PyTest}
 )

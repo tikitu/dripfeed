@@ -32,8 +32,14 @@ __license__ = "MIT"
 
 def main():
     args = docopt(__doc__, version=__version__)
+    run(args)
+
+
+def run(args):
     if args['list']:
         list_comics(args['--all'])
+    elif args['init']:
+        create_config(args['<comic>'])
     elif args['run']:
         run_once(args['<comic>'])
     elif args['info']:
@@ -55,6 +61,12 @@ def list_comics(show_unstarted):
                 got_any = True
         if not got_any:
             print('(no comics configured for download)')
+
+
+def create_config(comic_name):
+    comic = get_comic(comic_name)
+    config = comic.initial_config()
+    put_config(config, create_file=True)
 
 
 def run_once(comic_name):
