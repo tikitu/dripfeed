@@ -26,7 +26,7 @@ class Config(object):
 
 
 @contextlib.contextmanager
-def locked_config_file(filename=Config.FILENAME):
+def _locked_config_file(filename=Config.FILENAME):
     """
     Get and release lock on global config file.
     We use this whenever reading/writing (but *not* over whole program run!).
@@ -49,7 +49,7 @@ def locked_config_file(filename=Config.FILENAME):
 
 
 def get_config(comic_name):
-    with locked_config_file() as f:
+    with _locked_config_file() as f:
         global_config = json.load(f)
         return Config(comic_name=comic_name, **global_config.get(comic_name, {}))
 
@@ -60,11 +60,16 @@ def put_config(config, create_file=False, filename=Config.FILENAME):
         with open(filename, 'w+') as f:
             f.write('{}')
             f.write(os.linesep)
-    with locked_config_file(filename=filename) as f:
+    with _locked_config_file(filename=filename) as f:
         global_config = json.load(f)
         global_config.update(config.as_json_d())
         f.seek(0)
         json.dump(global_config, f)
 
 
-
+def get_global_config(allow_missing_file=False, filename=Config.FILENAME):
+    if allow_missing_file and not os.path.isfile(filename):
+        return {}
+    with _locked_config_file(filename=filename) as f:
+        global_config = json.load(f)
+    return global_config

@@ -22,7 +22,7 @@ Commands:
 from __future__ import unicode_literals, print_function
 from docopt import docopt
 from .comics import ALL as ALL_COMICS, get_comic
-from .configs import get_config, put_config, locked_config_file, Config
+from .configs import get_config, put_config, Config, get_global_config
 import simplejson as json
 
 __version__ = "0.1.0"
@@ -49,18 +49,17 @@ def run(args):
 
 
 def list_comics(show_unstarted):
-    with locked_config_file() as f:
-        global_config = json.load(f)
-        got_any = False
-        for comic in ALL_COMICS:
-            if comic.name in global_config or show_unstarted:
-                print('{0} ({1}): {2}'.format(comic.name, comic.full_name, comic.start_url))
-            if comic.name in global_config:
-                config = Config(comic_name=comic.name, **global_config[comic.name])
-                print('  At episode {0}: {1}'.format(config.downloaded_count, config.next_url))
-                got_any = True
-        if not got_any:
-            print('(no comics configured for download)')
+    global_config = get_global_config(allow_missing_file=True)
+    got_any = False
+    for comic in ALL_COMICS:
+        if comic.name in global_config or show_unstarted:
+            print('{0} ({1}): {2}'.format(comic.name, comic.full_name, comic.start_url))
+        if comic.name in global_config:
+            config = Config(comic_name=comic.name, **global_config[comic.name])
+            print('  At episode {0}: {1}'.format(config.downloaded_count, config.next_url))
+            got_any = True
+    if not got_any:
+        print('(no comics configured for download)')
 
 
 def create_config(comic_name):
