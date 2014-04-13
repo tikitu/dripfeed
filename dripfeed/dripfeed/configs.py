@@ -15,7 +15,7 @@ class Config(object):
         self.comic_name = comic_name
         self.downloaded_count = downloaded_count
         self.next_url = next_url
-        self.rss_file = os.path.abspath(rss_file)
+        self.rss_file = os.path.abspath(rss_file) if rss_file else None
 
     def as_json_d(self):
         """Return a dict suitable for updating the global config dict: global.update(a_config.as_json_d())."""
@@ -27,6 +27,8 @@ class Config(object):
             }
         }
 
+    def is_configured(self):
+        return bool(self.rss_file)
 
 @contextlib.contextmanager
 def _locked_config_file(filename=Config.FILENAME):
@@ -58,7 +60,8 @@ def get_config(comic_name):
 
 
 def put_config(config, create_file=False, filename=Config.FILENAME):
-    # NOT under locking: there's no (sane) way to lock file creation safely :-/ So be careful when you call this!
+    # file creation is NOT under locking: there's no (sane) way to lock file creation safely :-/
+    # So be careful when you call this, with create_file=True!
     if create_file and not os.path.isfile(filename):
         print('Creating file {0}'.format(filename))
         with open(filename, 'w') as f:

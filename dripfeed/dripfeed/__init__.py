@@ -79,8 +79,10 @@ def run_once(comic_name):
 def current_info(comic_name):
     comic = get_comic(comic_name)
     config = get_config(comic_name)
-    next_url = comic.get_url(config)
-    print('{0} (1): {2}'.format(comic.full_name, config.downloaded_count, next_url))
+    if config.is_configured():
+        print('{0} (ep. {1}): {2}'.format(comic.full_name, config.downloaded_count, config.rss_file))
+    else:
+        print('{0} (no rss)'.format(comic.full_name))
 
 
 def write_rss_entry(comic_name, entry):
