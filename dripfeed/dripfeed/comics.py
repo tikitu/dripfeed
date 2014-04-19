@@ -1,4 +1,3 @@
-from .configs import Config
 import requests
 import lxml.html
 
@@ -14,8 +13,12 @@ class Comic(object):
     def next_update(self, config):
         raise NotImplementedError()
 
-    def initial_config(self, rss_filename):
-        return Config(comic_name=self.name, downloaded_count=0, next_url=self.start_url, rss_file=rss_filename)
+    def add_to_global_config(self, global_config):
+        global_config.set(self.name, 'long_name', self.full_name)
+        global_config.set(self.name, 'start_url', self.start_url)
+
+    def next_url(self, current_url):
+        raise NotImplementedError('Subclasses must implement')
 
 
 class XPathComic(Comic):
@@ -23,15 +26,15 @@ class XPathComic(Comic):
         super(XPathComic, self).__init__(**kwargs)
         self.next_xpath = next_xpath
 
-    def next_update(self, config):
-        page = requests.get(config.next_url)
+    def next_url(self, current_url):
+        page = requests.get(current_url)
         tree = lxml.html.fromstring(page.content)
         elems = tree.xpath(self.next_xpath)
-        config = Config(comic_name=config.comic_name,
-                        downloaded_count=config.downloaded_count + 1,
-                        next_url=elems[0].attrib['href'],
-                        rss_file=config.rss_file)
-        return config.next_url, config
+        return elems[0].attrib['href']
+
+    def add_to_global_config(self, global_config):
+        global_config.set(self.name, 'next_xpath', self.next_xpath)
+        super(XPathComic, self).add_to_global_config(global_config)
 
 
 ALL = (

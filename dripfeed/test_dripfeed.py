@@ -1,25 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import shutil
+from dripfeed.comics import Comic
 import os
-from subprocess import check_output
 import tempfile
 from dripfeed.configs import put_config, Config
-import simplejson as json
 
 
 def test_put_config_creates_file():
     d = tempfile.mkdtemp()
     try:
         fname = os.path.join(d, 'test_config.cfg')
-        config = Config(comic_name='blah', downloaded_count=0, next_url='http://test.com/')
+        config = Config(comic=Comic(name='blah', start_url='http://test.com/'),
+                        next_url='http://test.com/',
+                        rss_file='/dev/null')
         put_config(config, create_file=True, filename=fname)
 
         with open(fname, 'r') as f:
             content = f.read()
         assert content
-        content = json.loads(content)
-        assert 'blah' in content
-        assert content['blah']
+        assert '[blah]' in content
     finally:
         shutil.rmtree(d)
