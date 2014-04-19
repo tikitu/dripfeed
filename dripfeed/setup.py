@@ -82,6 +82,7 @@ setup(
     tests_require=[
         'pytest',
         'simplejson',
+        'mock',
     ],
     cmdclass={'test': PyTest}
 )
