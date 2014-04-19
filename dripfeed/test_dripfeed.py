@@ -47,3 +47,13 @@ def test_run_once():
     with mock.patch('requests.get', return_value=first_gunnerkrigg_page()):
         next_url = config.comic.next_url(config.next_url)
     assert next_url == 'http://gunnerkrigg.com/?p=2'
+
+
+def test_absolute_url():
+    # Making sure that the treatment of *relative* URLs still lets *absolute* URLs work if we get those
+    config = Config(comic=XPathComic(name='blah', next_xpath='//a'), next_url='http://base.com/')
+    with mock.patch('requests.get', return_value=mock.Mock()) as get_mock:
+        get_mock.return_value.content = '<a href="http://elsewhere.com/">'
+        next_url = config.comic.next_url(config.next_url)
+    assert next_url == 'http://elsewhere.com/'
+
