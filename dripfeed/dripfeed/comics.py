@@ -1,3 +1,4 @@
+import urlparse
 import requests
 import lxml.html
 
@@ -30,7 +31,9 @@ class XPathComic(Comic):
         page = requests.get(current_url)
         tree = lxml.html.fromstring(page.content)
         elems = tree.xpath(self.next_xpath)
-        return elems[0].attrib['href']
+        next_url = elems[0].attrib['href']
+        next_url = urlparse.urljoin(current_url, next_url)  # convert relative url to absolute, e.g. ?p=2 to http://...
+        return next_url
 
     def add_to_global_config(self, global_config):
         global_config.set(self.name, 'next_xpath', self.next_xpath)
