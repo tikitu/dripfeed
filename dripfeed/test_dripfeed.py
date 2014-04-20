@@ -5,7 +5,6 @@ from dripfeed.comics import Comic, XPathComic
 import os
 import tempfile
 from dripfeed.configs import put_config, Config
-import requests
 import mock
 
 

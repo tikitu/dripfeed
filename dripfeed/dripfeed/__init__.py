@@ -78,11 +78,15 @@ def create_config(name, rss, next_xpath, start_url, full_name=None):
 
 def run_once(comic_name):
     config = get_config(comic_name)
-    next_url = config.comic.next_url(config.next_url)
-    config.next_url = next_url
-    config.episode += 1
-    put_config(config, overwrite=True)
-    write_rss_entry(config)
+    try:
+        next_url = config.comic.next_url(config.next_url)
+    except Exception as exception:
+        write_error_rss(config, exception)
+    else:  # only update the config file if there was no problem
+        config.next_url = next_url
+        config.episode += 1
+        put_config(config, overwrite=True)
+        write_success_rss(config)
 
 
 def current_info(comic_name):
@@ -90,7 +94,11 @@ def current_info(comic_name):
     print(os.linesep.join(config.get_info()))
 
 
-def write_rss_entry(config):
+def write_error_rss(config, exception):
+    raise NotImplementedError()
+
+
+def write_success_rss(config):
     raise NotImplementedError()
 
 if __name__ == '__main__':
