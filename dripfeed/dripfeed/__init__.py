@@ -26,6 +26,7 @@ Commands:
 """
 
 from __future__ import unicode_literals, print_function
+from dripfeed.rss import parse_rss, add_error_entry, add_entry, init_rss
 import os
 from docopt import docopt
 from .comics import get_comic, XPathComic
@@ -74,6 +75,7 @@ def create_config(name, rss, next_xpath, start_url, full_name=None):
                     next_url=start_url,
                     rss_file=rss)
     put_config(config, create_file=True)
+    init_rss(config)
 
 
 def run_once(comic_name):
@@ -94,12 +96,23 @@ def current_info(comic_name):
     print(os.linesep.join(config.get_info()))
 
 
+def _write_rss(config, op):
+    with open(config.rss_file, 'r+') as f:
+        prev_rss = parse_rss(f)
+        # feedparser closes file :-/
+    op(prev_rss)
+    with open(config.rss_file, 'r+') as f:
+        prev_rss.write_xml(f)
+        f.truncate()
+
+
 def write_error_rss(config, exception):
-    raise NotImplementedError()
+    _write_rss(config, lambda parsed_rss: add_error_entry(parsed_rss, exception))
 
 
 def write_success_rss(config):
-    raise NotImplementedError()
+    _write_rss(config, lambda parsed_rss: add_entry(parsed_rss, config))
+
 
 if __name__ == '__main__':
     main()

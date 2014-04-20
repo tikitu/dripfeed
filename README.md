@@ -9,4 +9,6 @@ Simultaneously:
       abstracting over the path to find the "next" url: paths are chained Python attribute lookups, not easily
       manipulable)
     - [`lxml`](http://lxml.de/) (allows XPath expressions, simple Python strings so perfect for abstraction)
-
+    - RSS libraries: oddly enough it seems I need to use *different libraries* for parsing and generating RSS:
+      - [`feedparser`](https://pypi.python.org/pypi/feedparser) for parsing
+      - [`PyRSS2Gen`](https://pypi.python.org/pypi/PyRSS2Gen) for generating

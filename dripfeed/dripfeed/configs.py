@@ -123,6 +123,7 @@ def remove_config(comic_name, filename=Config.FILENAME):
         f.truncate()
     return removed
 
+
 def get_global_config(allow_missing_file=False, filename=Config.FILENAME):
     if allow_missing_file and not os.path.isfile(filename):
         return ConfigParser.SafeConfigParser()
