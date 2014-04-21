@@ -25,7 +25,8 @@ class Comic(object):
         raise NotImplementedError()
 
     def add_to_global_config(self, global_config):
-        global_config.add_section(self.name)
+        if not global_config.has_section(self.name):
+            global_config.add_section(self.name)
         global_config.set(self.name, 'long_name', self.full_name)
         global_config.set(self.name, 'start_url', self.start_url)
         global_config.set(self.name, 'rss_file', self.rss_file)
