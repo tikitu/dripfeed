@@ -4,6 +4,7 @@ import ConfigParser
 import shutil
 from datetime import datetime, timedelta
 from StringIO import StringIO
+from dripfeed import create_comic, run_once
 from dripfeed.comics import Comic, XPathComic, Progress, put_comic, _unlocked_get_comic
 from dripfeed.rss import parse_rss
 import os
@@ -20,7 +21,8 @@ def test_put_config_creates_file():
         comic = Comic(name='blah', start_url='http://test.com/',
                       rss_file='/dev/null',
                       progress=Progress(next_url='http://test.com/'))
-        put_comic(comic, create_file=True, filename=fname)
+        with mock.patch('dripfeed.comics.CONF_FILENAME', fname):
+            put_comic(comic, create_file=True)
 
         with open(fname, 'r') as f:
             content = f.read()
@@ -92,7 +94,8 @@ next_xpath = //a
     d = tempfile.mkdtemp()
     try:
         fname = os.path.join(d, 'test_config.cfg')
-        put_comic(comic, create_file=True, overwrite=True, filename=fname)
+        with mock.patch('dripfeed.comics.CONF_FILENAME', fname):
+            put_comic(comic, create_file=True, overwrite=True)
 
         with open(fname, 'r') as f:
             content = f.read()
@@ -145,3 +148,23 @@ def assert_feeds_equal(f1, f2):
         assert i1.link == i2.link
         assert i1.description == i2.description
         assert i1.pubDate == i2.pubDate
+
+
+def test_init_adds_all_needed_data():
+    d = tempfile.mkdtemp()
+    try:
+        fname = os.path.join(d, 'test_config.cfg')
+        with mock.patch('dripfeed.comics.CONF_FILENAME', fname):
+            create_comic('gunnerkrigg', '/dev/null', '//a', 'http://gunnerkrigg.com/?p=1')
+            with mock.patch('requests.get') as get_mock:
+                get_mock.return_value.content = '<a href="?p=2"></a>'
+                run_once('gunnerkrigg')
+
+        with open(fname, 'r') as f:
+            content = f.read()
+        assert content
+        assert '[gunnerkrigg]' in content
+        assert 'episode = 2' in content
+        assert '?p=2' in content
+    finally:
+        shutil.rmtree(d)

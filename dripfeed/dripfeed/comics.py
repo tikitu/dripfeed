@@ -10,6 +10,9 @@ import lxml.html
 __author__ = 'tikitu'
 
 
+CONF_FILENAME = os.path.expanduser('~/.dripfeed.cfg')
+
+
 class Comic(object):
     def __init__(self, name=None, full_name=None, start_url=None, rss_file=None, progress=None):
         self.name = name
@@ -89,8 +92,6 @@ class Progress(object):
     url for the comic.
     """
 
-    FILENAME = os.path.expanduser('~/.dripfeed.cfg')
-
     def __init__(self, episode=1, next_url=None):
         self.episode = episode
         self.next_url = next_url
@@ -104,7 +105,7 @@ class Progress(object):
 
 
 @contextlib.contextmanager
-def _locked_config_file(filename=Progress.FILENAME):
+def _locked_config_file():
     """
     Get and release lock on global config file.
     We use this whenever reading/writing (but *not* over whole program run!).
@@ -112,6 +113,7 @@ def _locked_config_file(filename=Progress.FILENAME):
     comic: update Gunnerkrigg Court daily and Narbonic hourly with separate cron jobs (but don't update Narbonic hourly
     *and* daily, although why would you want to?).
     """
+    filename = CONF_FILENAME
     if not all((os.path.isfile(filename),
                 os.access(filename, os.R_OK),
                 os.access(filename, os.W_OK))):
@@ -157,18 +159,19 @@ def get_configured_comics(allow_missing_file=False):
     return [_unlocked_get_comic(comic_name, global_config) for comic_name in global_config.sections()]
 
 
-def put_comic(comic, create_file=False, filename=Progress.FILENAME, overwrite=False):
+def put_comic(comic, create_file=False, overwrite=False):
     """
     file creation is NOT under locking: there's no (sane) way to lock file creation safely :-/
     So be careful when you call this, with create_file=True!
 
     @arg comic: Comic object
     """
+    filename = CONF_FILENAME
     if create_file and not os.path.isfile(filename):
         print('Creating file {0}'.format(filename))
         with open(filename, 'w') as f:
             f.write(os.linesep)
-    with _locked_config_file(filename=filename) as f:
+    with _locked_config_file() as f:
         global_config = ConfigParser.SafeConfigParser()
         global_config.readfp(f)
         if global_config.has_section(comic.name) and not overwrite:
@@ -182,8 +185,8 @@ def put_comic(comic, create_file=False, filename=Progress.FILENAME, overwrite=Fa
         f.truncate()
 
 
-def remove_comic(comic_name, filename=Progress.FILENAME):
-    with _locked_config_file(filename=filename) as f:
+def remove_comic(comic_name):
+    with _locked_config_file() as f:
         global_config = ConfigParser.ConfigParser()
         global_config.readfp(f)
         removed = global_config.remove_section(comic_name)
@@ -193,10 +196,11 @@ def remove_comic(comic_name, filename=Progress.FILENAME):
     return removed
 
 
-def get_global_config(allow_missing_file=False, filename=Progress.FILENAME):
+def get_global_config(allow_missing_file=False):
+    filename = CONF_FILENAME
     if allow_missing_file and not os.path.isfile(filename):
         return ConfigParser.SafeConfigParser()
-    with _locked_config_file(filename=filename) as f:
+    with _locked_config_file() as f:
         global_config = ConfigParser.SafeConfigParser()
         global_config.readfp(f)
     return global_config
