@@ -45,7 +45,7 @@ class Comic(object):
 
     def update_progress(self, next_url):
         if self.progress is None:
-            self.progress = Progress(episode=0, next_url=self.start_url)
+            self.progress = Progress(episode=1, next_url=self.start_url)
         self.progress.episode += 1
         self.progress.next_url = next_url
 

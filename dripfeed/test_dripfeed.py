@@ -102,7 +102,7 @@ next_xpath = //a
             content = f.read()
         assert content
         assert '[gunnerkrigg]' in content
-        assert 'episode = 1' in content
+        assert 'episode = 2' in content
         assert '?p=2' in content
     finally:
         shutil.rmtree(d)
@@ -166,14 +166,15 @@ def test_init_adds_all_needed_data():
             content = f.read()
         assert content
         assert '[gunnerkrigg]' in content
-        assert 'episode = 1' in content
+        assert 'episode = 2' in content
         assert '?p=2' in content
         with open(rss_fname, 'r') as f:
             content = f.read()
         assert content
-        assert 'Episode 1' in content
         assert 'Episode 0' not in content
-        assert 'Episode 2' not in content
+        assert 'Episode 1' in content
+        assert 'Episode 2' in content
         assert 'http://gunnerkrigg.com/?p=1' in content
+        assert 'http://gunnerkrigg.com/?p=2' in content
     finally:
         shutil.rmtree(d)

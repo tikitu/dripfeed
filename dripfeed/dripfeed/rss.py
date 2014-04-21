@@ -57,11 +57,20 @@ def add_error_entry(rss, exception):
 
 
 def init_rss(comic):
+    now = datetime.now()
     rss = rss_gen.RSS2(
         title='Dripfeed for {0}'.format(comic.full_name),
         link='file://{0}'.format(comic.rss_file),
         description='Dripfeed replays comic archives at the rate you choose',
-        lastBuildDate=datetime.now()
+        lastBuildDate=now,
+        items=[
+            rss_gen.RSSItem(
+                title='First {0} episode'.format(comic.full_name),
+                description='Episode 1 provided by dripfeed',
+                link=comic.start_url,
+                pubDate=now,
+            )
+        ]
     )
     with open(comic.rss_file, 'w+') as f:
         rss.write_xml(f)
