@@ -41,7 +41,7 @@ def add_entry(rss, comic):
             title='New {0} episode'.format(comic.full_name),
             description='Episode {0} provided by dripfeed'.format(comic.progress.episode),
             link=comic.progress.next_url,
-            pubDate=datetime.now()
+            pubDate=datetime.utcnow()
         )
     ]
 
@@ -51,13 +51,13 @@ def add_error_entry(rss, exception):
         rss_gen.RSSItem(
             title='Latest episode has an error',
             description=unicode(exception),
-            pubDate=datetime.now(),
+            pubDate=datetime.utcnow(),
         )
     ]
 
 
 def init_rss(comic):
-    now = datetime.now()
+    now = datetime.utcnow()
     rss = rss_gen.RSS2(
         title='Dripfeed for {0}'.format(comic.full_name),
         link='file://{0}'.format(comic.rss_file),
