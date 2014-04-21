@@ -75,6 +75,7 @@ def test_progress_is_optional():
 def test_progress_config_is_optional():
     config_file = StringIO('''
 [gunnerkrigg]
+long_name = Gunnerkrigg Court
 rss_file = /dev/null
 start_url = http://gunnerkrigg.com/?p=1
 next_xpath = //a
@@ -85,6 +86,7 @@ next_xpath = //a
     with mock.patch('requests.get') as get_mock:
         get_mock.return_value.content = '<a href="?p=2"></a>'
         next_url = comic.next_url()
+        comic.update_progress(next_url)
     assert next_url == 'http://gunnerkrigg.com/?p=2'
 
     d = tempfile.mkdtemp()

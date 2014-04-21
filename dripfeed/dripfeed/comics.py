@@ -136,7 +136,7 @@ def get_comic(comic_name):
 def _unlocked_get_comic(comic_name, global_config):
     if not global_config.has_section(comic_name):
         raise ValueError(u'Comic {0} is not configured'.format(comic_name))
-    if global_config.get(comic_name, 'next_url', None) is not None:
+    if global_config.has_option(comic_name, 'next_url'):
         progress = Progress(
             episode=int(global_config.get(comic_name, 'episode', 1)),
             next_url=global_config.get(comic_name, 'next_url'),
