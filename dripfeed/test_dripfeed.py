@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import ConfigParser
 import shutil
 from datetime import datetime, timedelta
 from StringIO import StringIO
-from dripfeed.comics import Comic, XPathComic, Progress, put_comic
+from dripfeed.comics import Comic, XPathComic, Progress, put_comic, _unlocked_get_comic
 from dripfeed.rss import parse_rss
 import os
 import tempfile
@@ -60,6 +61,45 @@ def test_absolute_url():
         get_mock.return_value.content = '<a href="http://elsewhere.com/">'
         next_url = comic.next_url()
     assert next_url == 'http://elsewhere.com/'
+
+
+def test_progress_is_optional():
+    # Make sure that a Comic() created with progress=None is enough to get started
+    comic = XPathComic(name='gunnerkrigg', next_xpath='//a', start_url='http://gunnerkrigg.com/?p=1')
+    with mock.patch('requests.get') as get_mock:
+        get_mock.return_value.content = '<a href="?p=2"></a>'
+        next_url = comic.next_url()
+    assert next_url == 'http://gunnerkrigg.com/?p=2'
+
+
+def test_progress_config_is_optional():
+    config_file = StringIO('''
+[gunnerkrigg]
+rss_file = /dev/null
+start_url = http://gunnerkrigg.com/?p=1
+next_xpath = //a
+    ''')
+    global_config = ConfigParser.SafeConfigParser()
+    global_config.readfp(config_file)
+    comic = _unlocked_get_comic('gunnerkrigg', global_config)
+    with mock.patch('requests.get') as get_mock:
+        get_mock.return_value.content = '<a href="?p=2"></a>'
+        next_url = comic.next_url()
+    assert next_url == 'http://gunnerkrigg.com/?p=2'
+
+    d = tempfile.mkdtemp()
+    try:
+        fname = os.path.join(d, 'test_config.cfg')
+        put_comic(comic, create_file=True, overwrite=True, filename=fname)
+
+        with open(fname, 'r') as f:
+            content = f.read()
+        assert content
+        assert '[gunnerkrigg]' in content
+        assert 'episode = 1' in content
+        assert '?p=2' in content
+    finally:
+        shutil.rmtree(d)
 
 
 def test_round_tip_rss():
