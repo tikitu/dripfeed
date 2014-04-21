@@ -11,6 +11,8 @@ REQUIRES = [
     'portalocker',
     'requests',
     'lxml',
+    'feedparser',
+    'PyRSS2Gen',
 ]
 
 class PyTest(TestCommand):
