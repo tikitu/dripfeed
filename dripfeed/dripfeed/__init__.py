@@ -29,8 +29,7 @@ from __future__ import unicode_literals, print_function
 from dripfeed.rss import parse_rss, add_error_entry, add_entry, init_rss
 import os
 from docopt import docopt
-from .comics import get_comic, XPathComic
-from .configs import get_config, put_config, Config, get_global_config, get_configured_comics, remove_config
+from .comics import get_comic, XPathComic, remove_comic, get_configured_comics, put_comic
 
 __version__ = "0.1.0"
 __author__ = "Tikitu de Jager"
@@ -46,14 +45,14 @@ def run(args):
     if args['list']:
         list_comics()
     elif args['init']:
-        create_config(name=args['<comic-name>'], rss=args['<rss-file>'], next_xpath=args['<xpath>'],
-                      start_url=args['<url>'], full_name=args['<long-name>'])
+        create_comic(name=args['<comic-name>'], rss_file=args['<rss-file>'], next_xpath=args['<xpath>'],
+                     start_url=args['<url>'], full_name=args['<long-name>'])
     elif args['run']:
         run_once(args['<comic-name>'])
     elif args['info']:
         current_info(args['<comic-name>'])
     elif args['remove']:
-        if remove_config(args['<comic-name>']):
+        if remove_comic(args['<comic-name>']):
             print('removed')
         else:
             print('not found')
@@ -69,49 +68,46 @@ def list_comics():
         print('(no comics configured)')
 
 
-def create_config(name, rss, next_xpath, start_url, full_name=None):
-    comic = XPathComic(name=name, next_xpath=next_xpath, full_name=full_name, start_url=start_url)
-    config = Config(comic=comic,
-                    next_url=start_url,
-                    rss_file=rss)
-    put_config(config, create_file=True)
-    init_rss(config)
+def create_comic(name, rss_file, next_xpath, start_url, full_name=None):
+    comic = XPathComic(name=name, next_xpath=next_xpath, full_name=full_name, start_url=start_url, rss_file=rss_file,
+                       progress=None)
+    put_comic(comic, create_file=True)
+    init_rss(comic)
 
 
 def run_once(comic_name):
-    config = get_config(comic_name)
+    comic = get_comic(comic_name)
     try:
-        next_url = config.comic.next_url(config.next_url)
+        next_url = comic.next_url()
     except Exception as exception:
-        write_error_rss(config, exception)
+        write_error_rss(comic, exception)
     else:  # only update the config file if there was no problem
-        config.next_url = next_url
-        config.episode += 1
-        put_config(config, overwrite=True)
-        write_success_rss(config)
+        comic.update_progress(next_url)
+        put_comic(comic, overwrite=True)
+        write_success_rss(comic)
 
 
 def current_info(comic_name):
-    config = get_config(comic_name)
+    config = get_comic(comic_name)
     print(os.linesep.join(config.get_info()))
 
 
-def _write_rss(config, op):
-    with open(config.rss_file, 'r+') as f:
+def _write_rss(comic, op):
+    with open(comic.rss_file, 'r+') as f:
         prev_rss = parse_rss(f)
         # feedparser closes file :-/
     op(prev_rss)
-    with open(config.rss_file, 'r+') as f:
+    with open(comic.rss_file, 'r+') as f:
         prev_rss.write_xml(f)
         f.truncate()
 
 
-def write_error_rss(config, exception):
-    _write_rss(config, lambda parsed_rss: add_error_entry(parsed_rss, exception))
+def write_error_rss(comic, exception):
+    _write_rss(comic, lambda parsed_rss: add_error_entry(parsed_rss, exception))
 
 
-def write_success_rss(config):
-    _write_rss(config, lambda parsed_rss: add_entry(parsed_rss, config))
+def write_success_rss(comic):
+    _write_rss(comic, lambda parsed_rss: add_entry(parsed_rss, comic))
 
 
 if __name__ == '__main__':

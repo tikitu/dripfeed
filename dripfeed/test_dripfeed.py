@@ -3,11 +3,10 @@ from __future__ import unicode_literals
 import shutil
 from datetime import datetime, timedelta
 from StringIO import StringIO
-from dripfeed.comics import Comic, XPathComic
+from dripfeed.comics import Comic, XPathComic, Progress, put_comic
 from dripfeed.rss import parse_rss
 import os
 import tempfile
-from dripfeed.configs import put_config, Config
 import mock
 import PyRSS2Gen as rss_gen
 import feedparser as rss_parse
@@ -17,10 +16,10 @@ def test_put_config_creates_file():
     d = tempfile.mkdtemp()
     try:
         fname = os.path.join(d, 'test_config.cfg')
-        config = Config(comic=Comic(name='blah', start_url='http://test.com/'),
-                        next_url='http://test.com/',
-                        rss_file='/dev/null')
-        put_config(config, create_file=True, filename=fname)
+        comic = Comic(name='blah', start_url='http://test.com/',
+                      rss_file='/dev/null',
+                      progress=Progress(next_url='http://test.com/'))
+        put_comic(comic, create_file=True, filename=fname)
 
         with open(fname, 'r') as f:
             content = f.read()
@@ -45,20 +44,21 @@ def first_gunnerkrigg_page():
 
 
 def test_run_once():
-    config = Config(comic=XPathComic(name='gunnerkrigg',
-                                     next_xpath="//img[@src='http://www.gunnerkrigg.com/images/next_a.jpg']/.."),
-                    next_url='http://gunnerkrigg.com/?p=1')
+    comic = XPathComic(name='gunnerkrigg',
+                       next_xpath="//img[@src='http://www.gunnerkrigg.com/images/next_a.jpg']/..",
+                       progress=Progress(next_url='http://gunnerkrigg.com/?p=1'))
     with mock.patch('requests.get', return_value=first_gunnerkrigg_page()):
-        next_url = config.comic.next_url(config.next_url)
+        next_url = comic.next_url()
     assert next_url == 'http://gunnerkrigg.com/?p=2'
 
 
 def test_absolute_url():
     # Making sure that the treatment of *relative* URLs still lets *absolute* URLs work if we get those
-    config = Config(comic=XPathComic(name='blah', next_xpath='//a'), next_url='http://base.com/')
+    comic = comic=XPathComic(name='blah', next_xpath='//a',
+                             progress=Progress(next_url='http://base.com/'))
     with mock.patch('requests.get', return_value=mock.Mock()) as get_mock:
         get_mock.return_value.content = '<a href="http://elsewhere.com/">'
-        next_url = config.comic.next_url(config.next_url)
+        next_url = comic.next_url()
     assert next_url == 'http://elsewhere.com/'
 
 

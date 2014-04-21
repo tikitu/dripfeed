@@ -33,14 +33,14 @@ def parse_rss(fp):
     return to_gen
 
 
-def add_entry(rss, config):
+def add_entry(rss, comic):
     while rss.items and rss.items[0].title.endswith('error'):
         rss.items.pop(0)
     rss.items[0:0] = [
         rss_gen.RSSItem(
-            title='New {0} episode'.format(config.comic.full_name),
-            description='Episode {0} provided by dripfeed'.format(config.episode),
-            link=config.next_url,
+            title='New {0} episode'.format(comic.full_name),
+            description='Episode {0} provided by dripfeed'.format(comic.progress.episode),
+            link=comic.progress.next_url,
             pubDate=datetime.now()
         )
     ]
@@ -56,17 +56,16 @@ def add_error_entry(rss, exception):
     ]
 
 
-def init_rss(config):
+def init_rss(comic):
     rss = rss_gen.RSS2(
-        title='Dripfeed for {0}'.format(config.comic.full_name),
-        link='file://{0}'.format(config.rss_file),
+        title='Dripfeed for {0}'.format(comic.full_name),
+        link='file://{0}'.format(comic.rss_file),
         description='Dripfeed replays comic archives at the rate you choose',
         lastBuildDate=datetime.now()
     )
-    with open(config.rss_file, 'w+') as f:
+    with open(comic.rss_file, 'w+') as f:
         rss.write_xml(f)
         f.truncate()
-
 
 
 def struct_time_to_datetime(struct_time):
