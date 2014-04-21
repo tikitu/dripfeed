@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import ConfigParser
+import contextlib
 import shutil
 from datetime import datetime, timedelta
 from StringIO import StringIO
@@ -153,18 +154,26 @@ def assert_feeds_equal(f1, f2):
 def test_init_adds_all_needed_data():
     d = tempfile.mkdtemp()
     try:
-        fname = os.path.join(d, 'test_config.cfg')
-        with mock.patch('dripfeed.comics.CONF_FILENAME', fname):
-            create_comic('gunnerkrigg', '/dev/null', '//a', 'http://gunnerkrigg.com/?p=1')
+        conf_fname = os.path.join(d, 'test_config.cfg')
+        rss_fname = os.path.join(d, 'test.rss')
+        with mock.patch('dripfeed.comics.CONF_FILENAME', conf_fname):
+            create_comic('gunnerkrigg', rss_fname, '//a', 'http://gunnerkrigg.com/?p=1')
             with mock.patch('requests.get') as get_mock:
                 get_mock.return_value.content = '<a href="?p=2"></a>'
                 run_once('gunnerkrigg')
 
-        with open(fname, 'r') as f:
+        with open(conf_fname, 'r') as f:
             content = f.read()
         assert content
         assert '[gunnerkrigg]' in content
-        assert 'episode = 2' in content
+        assert 'episode = 1' in content
         assert '?p=2' in content
+        with open(rss_fname, 'r') as f:
+            content = f.read()
+        assert content
+        assert 'Episode 1' in content
+        assert 'Episode 0' not in content
+        assert 'Episode 2' not in content
+        assert 'http://gunnerkrigg.com/?p=1' in content
     finally:
         shutil.rmtree(d)
