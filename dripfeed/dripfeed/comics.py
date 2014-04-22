@@ -177,7 +177,8 @@ def put_comic(comic, create_file=False, overwrite=False):
         global_config.readfp(f)
         if global_config.has_section(comic.name) and not overwrite:
             raise ValueError('Comic {0} is already configured!'.format(comic.name))
-        print('Adding {0} to config file {1}'.format(comic.name, filename))
+        action = 'Updating' if overwrite else 'Adding'
+        print('{0} {1} in config file {2}'.format(action, comic.name, filename))
         comic.add_to_global_config(global_config)
 
         # Replace the *entire* file contents: this is why we need to lock so carefully!

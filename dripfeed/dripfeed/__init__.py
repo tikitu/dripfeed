@@ -6,7 +6,7 @@ Usage:
   dripfeed --help
   dripfeed list
   dripfeed init <comic-name> --rss <rss-file> --url <url> --next <xpath> [--name <long-name>]
-  dripfeed update <comic-name>
+  dripfeed update <comic-name> [--debug]
   dripfeed info <comic-name>
   dripfeed remove <comic-name>
 
@@ -17,6 +17,7 @@ Options:
   --rss         Path to the RSS file for output (file will be created)
   --next        XPath expression to extract the "next" link from a comic page
   --name        Optional long name for output (the short name is usually without spaces, since it's used on commandline)
+  --debug       Raise error when updating, instead of writing it into RSS
 
 Commands:
   list    Show all configured comics
@@ -49,7 +50,7 @@ def run(args):
         create_comic(name=args['<comic-name>'], rss_file=args['<rss-file>'], next_xpath=args['<xpath>'],
                      start_url=args['<url>'], full_name=args['<long-name>'])
     elif args['update']:
-        run_once(args['<comic-name>'])
+        run_once(args['<comic-name>'], raise_error=args['--debug'])
     elif args['info']:
         current_info(args['<comic-name>'])
     elif args['remove']:
@@ -76,11 +77,13 @@ def create_comic(name, rss_file, next_xpath, start_url, full_name=None):
     init_rss(comic)
 
 
-def run_once(comic_name):
+def run_once(comic_name, raise_error=False):
     comic = get_comic(comic_name)
     try:
         next_url = comic.next_url()
     except Exception as exception:
+        if raise_error:
+            raise
         write_error_rss(comic, exception)
     else:  # only update the config file if there was no problem
         comic.update_progress(next_url)
