@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
-import sys
 from setuptools import setup
-from setuptools.command.test import test as TestCommand
 
 
 REQUIRES = [
@@ -14,17 +12,6 @@ REQUIRES = [
     'feedparser',
     'PyRSS2Gen',
 ]
-
-class PyTest(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-        errcode = pytest.main(self.test_args)
-        sys.exit(errcode)
 
 
 def find_version(fname):
@@ -82,9 +69,8 @@ setup(
         ]
     },
     tests_require=[
-        'pytest',
-        'simplejson',
+        'nose',
         'mock',
     ],
-    cmdclass={'test': PyTest}
+    test_suite='nose.collector'
 )
