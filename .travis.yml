@@ -11,4 +11,4 @@ python:
 install: pip install -U .
 
 # command to run tests, e.g. python setup.py test
-script:
+script: python setup.py test
