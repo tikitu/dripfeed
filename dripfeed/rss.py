@@ -33,7 +33,7 @@ def parse_rss(fp):
     return to_gen
 
 
-def add_entry(rss, comic):
+def add_entry(rss, comic, num_entries=20):
     while rss.items and rss.items[0].title.endswith('error'):
         rss.items.pop(0)
     rss.items[0:0] = [
@@ -44,9 +44,10 @@ def add_entry(rss, comic):
             pubDate=datetime.utcnow()
         )
     ]
+    rss.items = rss.items[:num_entries]
 
 
-def add_error_entry(rss, exception):
+def add_error_entry(rss, exception, num_entries=20):
     rss.items[0:0] = [
         rss_gen.RSSItem(
             title='Latest episode has an error',
@@ -54,6 +55,7 @@ def add_error_entry(rss, exception):
             pubDate=datetime.utcnow(),
         )
     ]
+    rss.items = rss.items[:num_entries]
 
 
 def init_rss(comic):
