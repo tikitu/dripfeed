@@ -6,7 +6,7 @@ Usage:
   dripfeed --help
   dripfeed list
   dripfeed init <comic-name> --rss <rss-file> --url <url> --next <xpath> [--name <long-name>]
-  dripfeed run <comic-name>
+  dripfeed update <comic-name>
   dripfeed info <comic-name>
   dripfeed remove <comic-name>
 
@@ -19,10 +19,11 @@ Options:
   --name        Optional long name for output (the short name is usually without spaces, since it's used on commandline)
 
 Commands:
-  list  Show all configured comics
-  init  Create <rss-file> and set up config for <comic-name>
-  run   Update the RSS feed for <comic> with one entry (use cron for regular updates)
-  info  Show all config information for <comic>
+  list    Show all configured comics
+  init    Create <rss-file> and set up config for <comic-name>
+  update  Update the RSS feed for <comic-name> with one entry (use cron for regular updates)
+  info    Show all config information for <comic-name>
+  remove  Remove all configuration for <comic-name>
 """
 
 from __future__ import unicode_literals, print_function
@@ -47,7 +48,7 @@ def run(args):
     elif args['init']:
         create_comic(name=args['<comic-name>'], rss_file=args['<rss-file>'], next_xpath=args['<xpath>'],
                      start_url=args['<url>'], full_name=args['<long-name>'])
-    elif args['run']:
+    elif args['update']:
         run_once(args['<comic-name>'])
     elif args['info']:
         current_info(args['<comic-name>'])
