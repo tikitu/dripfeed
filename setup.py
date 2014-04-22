@@ -40,7 +40,7 @@ def read(fname):
 
 setup(
     name='dripfeed',
-    version="0.1.0",
+    version=__version__,
     description='Create an RSS feed of a webcomic archive, for slow perusal.',
     long_description=read("README.rst"),
     author='Tikitu de Jager',
@@ -56,9 +56,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
+        'Programming Language :: Python :: 2.6'
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
