@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import ConfigParser
+from contextlib import contextmanager
 import shutil
 from datetime import datetime, timedelta
 from StringIO import StringIO
@@ -16,9 +17,17 @@ import mock
 import PyRSS2Gen as rss_gen
 
 
-def test_put_config_creates_file():
+@contextmanager
+def temp_dir():
     d = tempfile.mkdtemp()
     try:
+        yield d
+    finally:
+        shutil.rmtree(d)
+
+
+def test_put_config_creates_file():
+    with temp_dir() as d:
         fname = os.path.join(d, 'test_config.cfg')
         comic = Comic(name='blah', start_url='http://test.com/',
                       rss_file='/dev/null',
@@ -30,8 +39,6 @@ def test_put_config_creates_file():
             content = f.read()
         assert content
         assert '[blah]' in content
-    finally:
-        shutil.rmtree(d)
 
 
 def first_gunnerkrigg_page():
@@ -93,8 +100,7 @@ next_xpath = //a
         comic.update_progress(next_url)
     assert next_url == 'http://gunnerkrigg.com/?p=2'
 
-    d = tempfile.mkdtemp()
-    try:
+    with temp_dir() as d:
         fname = os.path.join(d, 'test_config.cfg')
         with mock.patch('dripfeed.comics.CONF_FILENAME', fname):
             put_comic(comic, create_file=True, overwrite=True)
@@ -105,8 +111,6 @@ next_xpath = //a
         assert '[gunnerkrigg]' in content
         assert 'episode = 2' in content
         assert '?p=2' in content
-    finally:
-        shutil.rmtree(d)
 
 
 def test_round_tip_rss():
@@ -153,8 +157,7 @@ def assert_feeds_equal(f1, f2):
 
 
 def test_init_adds_all_needed_data():
-    d = tempfile.mkdtemp()
-    try:
+    with temp_dir() as d:
         conf_fname = os.path.join(d, 'test_config.cfg')
         rss_fname = os.path.join(d, 'test.rss')
         with mock.patch('dripfeed.comics.CONF_FILENAME', conf_fname):
@@ -177,45 +180,44 @@ def test_init_adds_all_needed_data():
         assert 'Episode 2' in content
         assert 'http://gunnerkrigg.com/?p=1' in content
         assert 'http://gunnerkrigg.com/?p=2' in content
-    finally:
-        shutil.rmtree(d)
 
 
 def test_file_locking():
-    d = tempfile.mkdtemp()
-    conf_fname = os.path.join(d, 'test_config.cfg')
-    with open(conf_fname, 'w') as f:
-        f.writelines([b'[default]'])
+    with temp_dir() as d:
+        conf_fname = os.path.join(d, 'test_config.cfg')
+        with open(conf_fname, 'w') as f:
+            f.writelines([b'[default]'])
 
-    # Wrap comic.add_to_global_config() to pause before writing: this is called *after* the read, so will guarantee
-    # a write collision if locking is not set up correctly.
-    orig_add_to_global_config = Comic.add_to_global_config
-    def patched_add_to_global_config(*args, **kwargs):
-        sleep(1)
-        orig_add_to_global_config(*args, **kwargs)
+        # Wrap comic.add_to_global_config() to pause before writing: this is called *after* the read, so will guarantee
+        # a write collision if locking is not set up correctly.
+        orig_add_to_global_config = Comic.add_to_global_config
+        def patched_add_to_global_config(*args, **kwargs):
+            sleep(1)
+            orig_add_to_global_config(*args, **kwargs)
 
-    try:  # monkey-patching :-/
+        try:  # monkey-patching :-/
 
-        Comic.add_to_global_config = patched_add_to_global_config
+            Comic.add_to_global_config = patched_add_to_global_config
 
-        def add_comic(name):
-            comic = XPathComic(name=name, start_url='http://test.com/', rss_file='test.rss', next_xpath='//a')
-            with mock.patch('dripfeed.comics.CONF_FILENAME', conf_fname):
-                put_comic(comic)
+            def add_comic(name):
+                comic = XPathComic(name=name, start_url='http://test.com/', rss_file='test.rss', next_xpath='//a')
+                with mock.patch('dripfeed.comics.CONF_FILENAME', conf_fname):
+                    put_comic(comic)
 
-        t1 = Thread(target=add_comic, args=('gunnerkrigg',))
-        t2 = Thread(target=add_comic, args=('narbonic',))
+            t1 = Thread(target=add_comic, args=('gunnerkrigg',))
+            t2 = Thread(target=add_comic, args=('narbonic',))
 
-        t1.start()
-        t2.start()
+            t1.start()
+            t2.start()
 
-        t1.join()
-        t2.join()
+            t1.join()
+            t2.join()
 
-    finally:
-        Comic.add_to_global_config = orig_add_to_global_config
+        finally:
+            Comic.add_to_global_config = orig_add_to_global_config
 
-    with open(conf_fname, 'r') as f:
-        content = f.read()
-    assert '[narbonic]' in content
-    assert '[gunnerkrigg]' in content
+        with open(conf_fname, 'r') as f:
+            content = f.read()
+        assert '[narbonic]' in content
+        assert '[gunnerkrigg]' in content
+    
