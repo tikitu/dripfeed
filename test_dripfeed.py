@@ -6,13 +6,13 @@ import shutil
 from datetime import datetime, timedelta
 from StringIO import StringIO
 from threading import Thread
-import threading
 from time import sleep
-from dripfeed import create_comic, run_once
-from dripfeed.comics import Comic, XPathComic, Progress, put_comic, _unlocked_get_comic
-from dripfeed.rss import parse_rss
 import os
 import tempfile
+
+from dripfeed import create_comic, run_once
+from dripfeed.comics import Comic, XPathComic, Progress, put_comic, _unlocked_get_comic
+from rss import parse_rss
 import mock
 import PyRSS2Gen as rss_gen
 

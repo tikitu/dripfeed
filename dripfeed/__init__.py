@@ -28,10 +28,12 @@ Commands:
 """
 
 from __future__ import unicode_literals, print_function
-from dripfeed.rss import parse_rss, add_error_entry, add_entry, init_rss
 import os
+
+from .rss import parse_rss, add_error_entry, add_entry, init_rss
 from docopt import docopt
 from .comics import get_comic, XPathComic, remove_comic, get_configured_comics, put_comic
+
 
 __version__ = "0.1.0"
 __author__ = "Tikitu de Jager"
