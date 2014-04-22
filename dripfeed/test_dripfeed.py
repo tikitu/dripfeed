@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import ConfigParser
-import contextlib
 import shutil
 from datetime import datetime, timedelta
 from StringIO import StringIO
+from threading import Thread
+import threading
+from time import sleep
 from dripfeed import create_comic, run_once
 from dripfeed.comics import Comic, XPathComic, Progress, put_comic, _unlocked_get_comic
 from dripfeed.rss import parse_rss
@@ -12,7 +14,6 @@ import os
 import tempfile
 import mock
 import PyRSS2Gen as rss_gen
-import feedparser as rss_parse
 
 
 def test_put_config_creates_file():
@@ -178,3 +179,43 @@ def test_init_adds_all_needed_data():
         assert 'http://gunnerkrigg.com/?p=2' in content
     finally:
         shutil.rmtree(d)
+
+
+def test_file_locking():
+    d = tempfile.mkdtemp()
+    conf_fname = os.path.join(d, 'test_config.cfg')
+    with open(conf_fname, 'w') as f:
+        f.writelines([b'[default]'])
+
+    # Wrap comic.add_to_global_config() to pause before writing: this is called *after* the read, so will guarantee
+    # a write collision if locking is not set up correctly.
+    orig_add_to_global_config = Comic.add_to_global_config
+    def patched_add_to_global_config(*args, **kwargs):
+        sleep(1)
+        orig_add_to_global_config(*args, **kwargs)
+
+    try:  # monkey-patching :-/
+
+        Comic.add_to_global_config = patched_add_to_global_config
+
+        def add_comic(name):
+            comic = XPathComic(name=name, start_url='http://test.com/', rss_file='test.rss', next_xpath='//a')
+            with mock.patch('dripfeed.comics.CONF_FILENAME', conf_fname):
+                put_comic(comic)
+
+        t1 = Thread(target=add_comic, args=('gunnerkrigg',))
+        t2 = Thread(target=add_comic, args=('narbonic',))
+
+        t1.start()
+        t2.start()
+
+        t1.join()
+        t2.join()
+
+    finally:
+        Comic.add_to_global_config = orig_add_to_global_config
+
+    with open(conf_fname, 'r') as f:
+        content = f.read()
+    assert '[narbonic]' in content
+    assert '[gunnerkrigg]' in content
