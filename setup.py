@@ -5,7 +5,6 @@ from setuptools import setup
 
 REQUIRES = [
     'docopt',
-    'simplejson',
     'portalocker',
     'requests',
     'lxml',

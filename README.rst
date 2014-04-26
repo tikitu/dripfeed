@@ -60,7 +60,7 @@ not intended to make business any harder for the authors whose work I admire.
 Requirements
 ------------
 
-- Python >= 2.6
+- Python >= 2.6, < 3
 
 License
 -------
@@ -78,3 +78,4 @@ the learning experience than because the task really demands it):
 * ``--quiet`` and ``--verbose`` options (and suitable defaults: ``update`` should be quiet since it is intended to be
   run under ``cron``)
 * Interactive ``init`` that prompts for necessary args and validates them (especially the xpath).
+* Example config file pushing my favourite webcomics.

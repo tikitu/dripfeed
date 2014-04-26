@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function
 import ConfigParser
 import contextlib
+from logging import getLogger
 import os
 import urlparse
 import portalocker
@@ -11,6 +12,8 @@ __author__ = 'tikitu'
 
 
 CONF_FILENAME = os.path.expanduser('~/.dripfeed.cfg')
+
+logger = getLogger('dripfeed')
 
 
 class Comic(object):
@@ -169,7 +172,7 @@ def put_comic(comic, create_file=False, overwrite=False):
     """
     filename = CONF_FILENAME
     if create_file and not os.path.isfile(filename):
-        print('Creating file {0}'.format(filename))
+        logger.info('Creating file {0}'.format(filename))
         with open(filename, 'w') as f:
             f.write(os.linesep)
     with _locked_config_file() as f:
@@ -178,7 +181,7 @@ def put_comic(comic, create_file=False, overwrite=False):
         if global_config.has_section(comic.name) and not overwrite:
             raise ValueError('Comic {0} is already configured!'.format(comic.name))
         action = 'Updating' if overwrite else 'Adding'
-        print('{0} {1} in config file {2}'.format(action, comic.name, filename))
+        logger.info('{0} {1} in config file {2}'.format(action, comic.name, filename))
         comic.add_to_global_config(global_config)
 
         # Replace the *entire* file contents: this is why we need to lock so carefully!

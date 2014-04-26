@@ -5,15 +5,20 @@
 Usage:
   dripfeed --help
   dripfeed list
-  dripfeed init <comic-name> --rss <rss-file> --url <url> --next <xpath> [--name <long-name>]
-  dripfeed update <comic-name> [--debug]
   dripfeed info <comic-name>
-  dripfeed remove <comic-name>
+  dripfeed [options] init <comic-name> --rss <rss-file> --url <url> --next <xpath> [--name <long-name>]
+  dripfeed [options] update <comic-name> [--debug]
+  dripfeed [options] remove <comic-name>
 
 Options:
-  -h --help     Show this screen.
-  --version     Show version.
+  -h --help         Show this screen.
+  --version         Show version.
+  --log <log-file>  Log file for output (defaults to stdout)
+  --quiet           Equivalent to --log-level error
+  --verbose         Equivalent to --log-level debug
+  --log-level debug|info|warning|error|critical  Show only logs from the specified level or above
 
+Arguments:
   --rss         Path to the RSS file for output (file will be created)
   --next        XPath expression to extract the "next" link from a comic page
   --name        Optional long name for output (the short name is usually without spaces, since it's used on commandline)
@@ -28,6 +33,8 @@ Commands:
 """
 
 from __future__ import unicode_literals, print_function
+from logging import getLogger
+import logging
 import os
 
 from .rss import parse_rss, add_error_entry, add_entry, init_rss
@@ -39,6 +46,8 @@ __version__ = "0.9.0"
 __author__ = "Tikitu de Jager"
 __license__ = "MIT"
 
+logger = getLogger('dripfeed')
+
 
 def main():
     args = docopt(__doc__, version=__version__)
@@ -46,6 +55,8 @@ def main():
 
 
 def run(args):
+    init_logging(args)
+
     if args['list']:
         list_comics()
     elif args['init']:
@@ -57,9 +68,9 @@ def run(args):
         current_info(args['<comic-name>'])
     elif args['remove']:
         if remove_comic(args['<comic-name>']):
-            print('removed')
+            logger.info('removed')
         else:
-            print('not found')
+            logger.info('not found')
     else:
         raise ValueError('Wut? {0}'.format(args))
 
@@ -70,6 +81,26 @@ def list_comics():
         print(os.linesep.join(config.get_info()))
     if not all_configs:
         print('(no comics configured)')
+
+
+def init_logging(cli_args):
+    log_level = cli_args['--log-level']
+    quiet = cli_args['--quiet']
+    verbose = cli_args['--verbose']
+    log_file = cli_args['--log']
+
+    # "update" command typically runs under cron: better to have no output
+    default_log_level = 'ERROR' if cli_args['update'] else 'INFO'
+
+    final_log_level = default_log_level
+    if log_level:
+        final_log_level = log_level.upper()
+    elif quiet:
+        final_log_level = 'WARNING'
+    elif verbose:
+        final_log_level = 'DEBUG'
+    logger.setLevel(final_log_level)
+    logging.basicConfig(filename=log_file, format='%(name)s [%(levelname)s] %(message)s')
 
 
 def create_comic(name, rss_file, next_xpath, start_url, full_name=None):
