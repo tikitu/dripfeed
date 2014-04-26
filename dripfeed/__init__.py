@@ -104,6 +104,7 @@ def init_logging(cli_args):
 
 
 def create_comic(name, rss_file, next_xpath, start_url, full_name=None):
+    rss_file = os.path.abspath(rss_file)
     comic = XPathComic(name=name, next_xpath=next_xpath, full_name=full_name, start_url=start_url, rss_file=rss_file,
                        progress=None)
     put_comic(comic, create_file=True)
