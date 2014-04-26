@@ -1,15 +1,8 @@
 from __future__ import unicode_literals, print_function
-try:
-    import ConfigParser as configparser  # python 2
-except:
-    import configparser  # python 3
+from .six import ConfigParser, urljoin
 import contextlib
 from logging import getLogger
 import os
-try:
-    from urllib.parse import urljoin  # python3
-except:
-    from urlparse import urljoin  # python2
 import portalocker
 import requests
 import lxml.html
@@ -140,8 +133,8 @@ def _locked_config_file():
 
 def get_comic(comic_name):
     with _locked_config_file() as f:
-        global_config = configparser.SafeConfigParser(defaults={'episode': 1, 'long_name': None})
-        global_config.readfp(f)
+        global_config = ConfigParser(defaults={'episode': 1, 'long_name': None})
+        global_config.read_file(f)
         return _unlocked_get_comic(comic_name, global_config)
 
 
@@ -182,8 +175,8 @@ def put_comic(comic, create_file=False, overwrite=False):
         with open(filename, 'w') as f:
             f.write(os.linesep)
     with _locked_config_file() as f:
-        global_config = configparser.SafeConfigParser()
-        global_config.readfp(f)
+        global_config = ConfigParser()
+        global_config.read_file(f)
         if global_config.has_section(comic.name) and not overwrite:
             raise ValueError('Comic {0} is already configured!'.format(comic.name))
         action = 'Updating' if overwrite else 'Adding'
@@ -198,8 +191,8 @@ def put_comic(comic, create_file=False, overwrite=False):
 
 def remove_comic(comic_name):
     with _locked_config_file() as f:
-        global_config = configparser.ConfigParser()
-        global_config.readfp(f)
+        global_config = ConfigParser()
+        global_config.read_file(f)
         removed = global_config.remove_section(comic_name)
         f.seek(0)
         global_config.write(f)
@@ -210,8 +203,8 @@ def remove_comic(comic_name):
 def get_global_config(allow_missing_file=False):
     filename = CONF_FILENAME
     if allow_missing_file and not os.path.isfile(filename):
-        return configparser.SafeConfigParser()
+        return ConfigParser()
     with _locked_config_file() as f:
-        global_config = configparser.SafeConfigParser()
-        global_config.readfp(f)
+        global_config = ConfigParser()
+        global_config.read_file(f)
     return global_config

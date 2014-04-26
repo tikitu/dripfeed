@@ -131,11 +131,11 @@ def current_info(comic_name):
 
 
 def _write_rss(comic, op):
-    with open(comic.rss_file, 'r+') as f:
+    with open(comic.rss_file, 'r+b') as f:
         prev_rss = parse_rss(f)
         # feedparser closes file :-/
     op(prev_rss)
-    with open(comic.rss_file, 'r+') as f:
+    with open(comic.rss_file, 'r+b') as f:
         prev_rss.write_xml(f)
         f.truncate()
 

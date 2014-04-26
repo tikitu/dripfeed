@@ -3,17 +3,13 @@ from __future__ import unicode_literals
 from contextlib import contextmanager
 import shutil
 from datetime import datetime, timedelta
-try:
-    from io import StringIO  # python3
-except:
-    from StringIO import StringIO  # python2
+from six import BytesIO, StringIO
 from threading import Thread
 from time import sleep
 import os
 import tempfile
-
 from dripfeed import create_comic, run_once
-from dripfeed.comics import Comic, XPathComic, Progress, put_comic, _unlocked_get_comic, configparser
+from dripfeed.comics import Comic, XPathComic, Progress, put_comic, _unlocked_get_comic, ConfigParser
 from dripfeed.rss import parse_rss
 import mock
 import PyRSS2Gen as rss_gen
@@ -93,8 +89,8 @@ rss_file = /dev/null
 start_url = http://gunnerkrigg.com/?p=1
 next_xpath = //a
     ''')
-    global_config = configparser.SafeConfigParser()
-    global_config.readfp(config_file)
+    global_config = ConfigParser()
+    global_config.read_file(config_file)
     comic = _unlocked_get_comic('gunnerkrigg', global_config)
     with mock.patch('requests.get') as get_mock:
         get_mock.return_value.content = '<a href="?p=2"></a>'
@@ -115,7 +111,7 @@ next_xpath = //a
         assert '?p=2' in content
 
 
-def test_round_tip_rss():
+def test_round_trip_rss():
     now = datetime.utcnow().replace(microsecond=0)
     feed = rss_gen.RSS2(
         title='Feed Title',
@@ -137,7 +133,7 @@ def test_round_tip_rss():
             )
         ]
     )
-    pseudofile = StringIO()
+    pseudofile = BytesIO()
     feed.write_xml(pseudofile, encoding='utf-8')
     pseudofile.flush()
     pseudofile.seek(0)
