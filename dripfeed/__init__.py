@@ -42,7 +42,7 @@ from docopt import docopt
 from .comics import get_comic, XPathComic, remove_comic, get_configured_comics, put_comic
 
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Tikitu de Jager"
 __license__ = "MIT"
 
