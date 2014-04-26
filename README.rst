@@ -40,9 +40,8 @@ Now running::
 will update the rss feed at ``./gunnerkrigg.rss`` and store progress in ``~/.dripfeed.cfg``: I'd expect this command to
 go in a cron job.
 
-At present success generates output on stdout, so you'll want to redirect stdout to ``/dev/null`` if you run this from
-``cron``; I intend to change this in a later version. Errors are recorded in the RSS feed, and you can run
-``dripfeed update`` with a ``--debug`` flag to see a full stack trace of the error.
+Errors are recorded in the RSS feed, and you can run ``dripfeed update`` with a ``--debug`` flag to see a full stack
+trace of the error.
 
 Output
 ------
@@ -74,8 +73,5 @@ Not sure when I'll get around to these, but here are a few things I would like t
 the learning experience than because the task really demands it):
 
 * python3 support
-* switch ``print()`` output to use logging
-* ``--quiet`` and ``--verbose`` options (and suitable defaults: ``update`` should be quiet since it is intended to be
-  run under ``cron``)
 * Interactive ``init`` that prompts for necessary args and validates them (especially the xpath).
 * Example config file pushing my favourite webcomics.
