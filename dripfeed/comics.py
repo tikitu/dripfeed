@@ -1,9 +1,15 @@
 from __future__ import unicode_literals, print_function
-import ConfigParser
+try:
+    import ConfigParser as configparser  # python 2
+except:
+    import configparser  # python 3
 import contextlib
 from logging import getLogger
 import os
-import urlparse
+try:
+    from urllib.parse import urljoin  # python3
+except:
+    from urlparse import urljoin  # python2
 import portalocker
 import requests
 import lxml.html
@@ -81,7 +87,7 @@ class XPathComic(Comic):
         if not elems:
             raise NoMatchForXPathError(xpath=self.next_xpath, url=current_url)
         next_url = elems[0].attrib['href']
-        next_url = urlparse.urljoin(current_url, next_url)  # convert relative url to absolute, e.g. ?p=2 to http://...
+        next_url = urljoin(current_url, next_url)  # convert relative url to absolute, e.g. ?p=2 to http://...
         return next_url
 
     def add_to_global_config(self, global_config):
@@ -102,7 +108,7 @@ class Progress(object):
 
     def add_to_global_config(self, global_config, under_name):
         """
-        @arg global_config: ConfigParser.ConfigParser
+        @arg global_config: configparser.ConfigParser
         """
         global_config.set(under_name, 'next_url', self.next_url)
         global_config.set(under_name, 'episode', str(self.episode))
@@ -134,7 +140,7 @@ def _locked_config_file():
 
 def get_comic(comic_name):
     with _locked_config_file() as f:
-        global_config = ConfigParser.SafeConfigParser()
+        global_config = configparser.SafeConfigParser(defaults={'episode': 1, 'long_name': None})
         global_config.readfp(f)
         return _unlocked_get_comic(comic_name, global_config)
 
@@ -144,13 +150,13 @@ def _unlocked_get_comic(comic_name, global_config):
         raise ValueError(u'Comic {0} is not configured'.format(comic_name))
     if global_config.has_option(comic_name, 'next_url'):
         progress = Progress(
-            episode=int(global_config.get(comic_name, 'episode', 1)),
+            episode=int(global_config.get(comic_name, 'episode')),
             next_url=global_config.get(comic_name, 'next_url'),
         )
     else:
         progress = None
     comic = XPathComic(name=comic_name,
-                       full_name=global_config.get(comic_name, 'long_name', None),
+                       full_name=global_config.get(comic_name, 'long_name'),
                        start_url=global_config.get(comic_name, 'start_url'),
                        rss_file=global_config.get(comic_name, 'rss_file'),
                        next_xpath=global_config.get(comic_name, 'next_xpath'),
@@ -176,7 +182,7 @@ def put_comic(comic, create_file=False, overwrite=False):
         with open(filename, 'w') as f:
             f.write(os.linesep)
     with _locked_config_file() as f:
-        global_config = ConfigParser.SafeConfigParser()
+        global_config = configparser.SafeConfigParser()
         global_config.readfp(f)
         if global_config.has_section(comic.name) and not overwrite:
             raise ValueError('Comic {0} is already configured!'.format(comic.name))
@@ -192,7 +198,7 @@ def put_comic(comic, create_file=False, overwrite=False):
 
 def remove_comic(comic_name):
     with _locked_config_file() as f:
-        global_config = ConfigParser.ConfigParser()
+        global_config = configparser.ConfigParser()
         global_config.readfp(f)
         removed = global_config.remove_section(comic_name)
         f.seek(0)
@@ -204,8 +210,8 @@ def remove_comic(comic_name):
 def get_global_config(allow_missing_file=False):
     filename = CONF_FILENAME
     if allow_missing_file and not os.path.isfile(filename):
-        return ConfigParser.SafeConfigParser()
+        return configparser.SafeConfigParser()
     with _locked_config_file() as f:
-        global_config = ConfigParser.SafeConfigParser()
+        global_config = configparser.SafeConfigParser()
         global_config.readfp(f)
     return global_config
