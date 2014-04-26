@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function
-from .six import ConfigParser, urljoin
+from .twothree import ConfigParser, urljoin
 import contextlib
 from logging import getLogger
 import os

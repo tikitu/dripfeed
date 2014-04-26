@@ -10,7 +10,7 @@ REQUIRES = [
     'lxml',
     'feedparser',
     'PyRSS2Gen',
-    'six',
+    'six>=1.4',
 ]
 
 
