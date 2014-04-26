@@ -59,7 +59,7 @@ not intended to make business any harder for the authors whose work I admire.
 Requirements
 ------------
 
-- Python >= 2.6, < 3
+- Python >= 2.6
 
 License
 -------
@@ -69,9 +69,8 @@ MIT licensed. See the bundled `LICENSE <https://bitbucket.org/tikitu/dripfeed/sr
 TODO
 ----
 
-Not sure when I'll get around to these, but here are a few things I would like to do with it (several of them more for
+Not sure when I'll get around to these, but here are a couple things I would like to do with it (maybe more for
 the learning experience than because the task really demands it):
 
-* python3 support
 * Interactive ``init`` that prompts for necessary args and validates them (especially the xpath).
 * Example config file pushing my favourite webcomics.
