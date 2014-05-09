@@ -42,7 +42,7 @@ from docopt import docopt
 from .comics import get_comic, XPathComic, remove_comic, get_configured_comics, put_comic
 
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __author__ = "Tikitu de Jager"
 __license__ = "MIT"
 
@@ -118,7 +118,7 @@ def run_once(comic_name, raise_error=False):
     except Exception as exception:
         if raise_error:
             raise
-        write_error_rss(comic, exception)
+        write_error_rss(comic, exception, comic.current_url)
     else:  # only update the config file if there was no problem
         comic.update_progress(next_url)
         put_comic(comic, overwrite=True)
@@ -140,8 +140,8 @@ def _write_rss(comic, op):
         f.truncate()
 
 
-def write_error_rss(comic, exception):
-    _write_rss(comic, lambda parsed_rss: add_error_entry(parsed_rss, exception))
+def write_error_rss(comic, exception, current_url):
+    _write_rss(comic, lambda parsed_rss: add_error_entry(parsed_rss, exception, current_url))
 
 
 def write_success_rss(comic):

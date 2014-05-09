@@ -47,12 +47,13 @@ def add_entry(rss, comic, num_entries=20):
     rss.items = rss.items[:num_entries]
 
 
-def add_error_entry(rss, exception, num_entries=20):
+def add_error_entry(rss, exception, current_url, num_entries=20):
     rss.items[0:0] = [
         rss_gen.RSSItem(
             title='Latest episode has an error',
             description=unicode(exception),
             pubDate=datetime.utcnow(),
+            link=current_url,
         )
     ]
     rss.items = rss.items[:num_entries]
